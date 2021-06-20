@@ -144,7 +144,7 @@ VALUES(3009, 105, 2010, 2, ('2021-03-24'), 226);
 INSERT INTO Purchase
 VALUES(3010, 109, 2008, 2, ('2021-04-01'), 1186);
 
-
+--Function to calculate voucher according to total purchase of a certain customer
 DELIMITER $$
 CREATE DEFINER=`root`@`localhost` FUNCTION `vouchCal`(totalPur int) RETURNS int(11)
 BEGIN
@@ -172,6 +172,7 @@ BEGIN
 	END$$
 DELIMITER ;
 
+--Procedure to run the function
 
 DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_vouchCal`(custID int)
@@ -182,3 +183,35 @@ BEGIN
         	WHERE c.Cust_Id = custID;
 	END$$
 DELIMITER ;
+
+
+
+
+
+--Function to calculate number of purchase by a certain customer
+
+	DELIMITER $$
+	CREATE FUNCTION calNumPurchase(custID int)
+	RETURNS int
+	BEGIN
+		DECLARE numOfPurchase int;
+
+		SELECT COUNT(pur_id) INTO numOfPurchase FROM purchase
+		WHERE cust_id = custID;
+
+		RETURN (numOfPurchase);
+	END $$
+
+
+--Procedure to run the function
+	DELIMITER $$
+	CREATE PROCEDURE proc_calNumPurchase()
+	BEGIN
+		DECLARE cname varchar(50);
+    		DECLARE cid int;
+    
+   	 	SELECT cust_name, cust_id INTO cname, cid
+    		FROM customer
+    		WHERE cust_id = custID;
+		SELECT CONCAT('Number of purchase by this customer is' calNumPurchase(custID)) AS '';
+	END $$
