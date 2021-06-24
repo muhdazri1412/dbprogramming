@@ -125,7 +125,7 @@
         </nav>
 <div align="center">
        <div class="title">
-           <h1> ADD NEW GAME </h1>
+           <h1> ADD NEW CUSTOMER </h1>
         </div> 
     <div class="content">
     <form method="post" action="insert.php" >

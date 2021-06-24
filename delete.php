@@ -152,7 +152,7 @@
             </div>
     </nav>
     <div class="title" align="center">
-       <h1> DELETE A Customer Information </h1>
+       <h1> DELETE CUSTOMER </h1>
     </div> 
     <center>
             <form action="" method = "POST">

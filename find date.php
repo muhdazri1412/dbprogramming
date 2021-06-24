@@ -136,7 +136,7 @@
 
 <div align="center">
     <div class="title">
-       <h1> CUSTOMER TABLE </h1>
+       <h1> Purchase 1/1 - 3/1 TABLE </h1>
     </div>
         </br>
         </br>

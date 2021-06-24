@@ -150,7 +150,7 @@ $result = $con->query($sql);
 
 
 if ($result->num_rows > 0) {
-    echo "<table><tr><th> cust_id</th><th>cust_fname</th><th>cust_lname</th><th>Dateofbirth</th><th>phone</th></tr>";
+    echo "<table><tr><th> cust_id</th><th>Cust_Name</th><th>Cust_phoneNum</th><th>Cust_Email</th><th>Cust_address</th></tr>";
 
     while ($row = $result->fetch_assoc()) {
         echo "<tr>";

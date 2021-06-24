@@ -136,7 +136,7 @@
 
 <div align="center">
     <div class="title">
-       <h1> GAME RATING TABLE </h1>
+       <h1> PURCHASE TABLE </h1>
     </div>
         </br>
         </br>

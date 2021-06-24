@@ -144,7 +144,6 @@
         <input class="button" type="button" value="View Purchase Table" onclick="window.location.href='purchase.php'" />
         <input class="button" type="button" value="Customer with purchase info"  onclick="window.location.href='custpurchase.php'" />
         <input class="button" type="button" value="Purhase between 1/1 - 3/1"  onclick="window.location.href='find date.php'" />
-        <input class="button" type="button" value="calculate number of purchase"  onclick="window.location.href='calculate.php'" />
         <input class="button" type="button" value="Eligible voucher"  onclick="window.location.href='calculate.php'" />
         <input class="button" type="button" value="total count purchase"  onclick="window.location.href='numpurchase.php'" />
     </form>

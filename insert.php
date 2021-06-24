@@ -139,7 +139,7 @@ if(mysqli_query($con, $sql))
     echo "Records added successfully. ";
     echo "<br>";
     echo "<br>";
-    echo "Click <a href='itemlist.php'>here</a> to show customer list. ";
+    echo "Click <a href='customer.php'>here</a> to show customer list. ";
     echo "<br>";
     echo "<br>";
     echo "Click <a href='addnewitem.php'>here</a> to add new customer. ";
