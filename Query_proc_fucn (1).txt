@@ -1,0 +1,397 @@
+QUERIES
+
+--List all item
+	SELECT * FROM Item;
+
+--List all purchase based on a certain customer
+	SELECT c.cust_id, c.cust_name, a.pur_id, b.item_name, a.pur_quantity, DATE_FORMAT(a.pur_datepurchase, '%d-%M-%y'), a.pur_total
+	FROM Purchase a
+		INNER JOIN Item b ON a.Item_Id = b.item_Id
+    		INNER JOIN Customer c ON a.Cust_Id = c.Cust_Id
+	WHERE c.cust_id = custID
+	ORDER BY c.Cust_Id;
+
+
+List all csutomer with purchase information
+	SELECT c.cust_id, c.cust_name, a.pur_id, b.item_name, a.pur_quantity, DATE_FORMAT(a.pur_datepurchase, '%d-%M-%y'), a.pur_total
+	FROM Purchase a
+		INNER JOIN Item b ON a.Item_Id = b.item_Id
+    		INNER JOIN Customer c ON a.Cust_Id = c.Cust_Id
+	ORDER BY c.Cust_Id;
+
+
+--List all customer
+	SELECT * FROM Customer;
+
+
+--Find purchase between specific date
+	SELECT * FROM Purchase
+	WHERE pur_datepurchase between '2021-01-01' AND '2021-03-01';
+
+
+--Find Item based on item description
+	SELECT * FROM Item
+	WHERE Item_desc LIKE '%memory%';
+
+
+--Add new item
+	INSERT INTO Item
+	VALUES(item_id, Brand_Id, Item_name, Item_price, Item_relDate, Item_desc);
+
+
+--Modify item price
+	UPDATE Item
+	SET Item_price = newprice
+	WHERE Item_id = itemID;
+
+
+--Delete Certain Item
+	DELETE FROM Item
+	WHERE Item_Id = itemID;
+
+
+--Add new customer
+	INSERT INTO Customer
+	VALUES(Cust_id, 'name', phone number , 'email', 'address');
+
+
+--Modify Customer information
+	UPDATE Customer
+	SET Cust_phoneNum = newphoneNumber,
+	    Cust_email = newEmail,
+	    Cust_address - newAddress
+	WHERE Cust_id = custID;
+
+
+--Delete Certain Customer
+	DELETE FROM Customer
+	WHERE Cust_id = custID;
+
+
+--Find item made by speficic brand name
+	SELECT item_id, item_name, item_desc, item_price, brand_name, brand_maker
+	FROM Item NATURAL JOIN Brand
+	WHERE Brand_id = (SELECT Brand_id
+			    FROM Brand
+			    WHERE Brand_name = brandName')
+
+################################################################################################
+
+PROC
+
+--Find the total purchase made by a particular customer
+	DELIMITER $$
+	CREATE PROCEDURE Find_Total_Purchase(custID int)
+	BEGIN
+		SELECT c.cust_id, c.cust_name, CONCAT('RM ',SUM(p.pur_total)) AS Total_Purchase
+    		FROM customer c
+    			INNER JOIN purchase p ON c.Cust_Id = p.Cust_Id
+    		WHERE c.Cust_Id = custID
+   		GROUP BY c.Cust_Id;
+	END $$
+
+
+--Find the total purchase made by a particular customer (with exception)
+	DELIMITER $$
+		BEGIN
+		DECLARE cnum int;
+    
+    		SELECT COUNT(cust_id) INTO cnum
+    		FROM customer
+    		WHERE cust_id = custID;
+    
+    		IF(cnum != 1) THEN
+    			SIGNAL SQLSTATE '45000'
+        			SET MESSAGE_TEXT = 'Customer with this customer ID does not exist';
+    		ELSE
+			SELECT c.cust_id, c.cust_name, CONCAT('RM ',SUM(p.pur_total)) AS Total_Purchase
+    			FROM customer c
+    				INNER JOIN purchase p ON c.Cust_Id = p.Cust_Id
+    			WHERE c.Cust_Id = custID
+   			GROUP BY c.Cust_Id;
+    		END IF;
+	END $$
+
+-----------------------------------------------ITEM----------------------------------------------
+
+--Insert new item
+	DELIMITER $$
+	CREATE PROCEDURE Insert_Item(itemID int, brandID int, itemName varchar(50), itemPrice int, itemRelDate date, itemDesc varchar(50))
+	BEGIN
+    		INSERT INTO Item
+    		VALUES(itemID, brandID, itemName, itemPrice, itemRelDate, ItemDesc);
+	END $$
+
+
+
+--Delete specific item (with exception)
+	DELIMITER $$
+	CREATE PROCEDURE Delete_Item(itemID int)
+	BEGIN
+    		DECLARE itemNum int;
+    
+    		SELECT COUNT(item_id) INTO itemNum
+    		FROM item
+   		WHERE item_id = itemID;
+    
+    		IF(itemNum != 1) THEN
+        		SIGNAL SQLSTATE '45000'
+            		SET MESSAGE_TEXT = 'Item ID does not exist';
+    		ELSE
+        		DELETE FROM item
+        		WHERE item_Id = itemID;
+    		END IF;
+	END $$
+
+
+
+--Modify specific item
+	DELIMITER $$
+	CREATE PROCEDURE Modify_Item(ItemID int, brandID int, itemName varchar(50), itemPrice int, itemRelDate date, itemDesc varchar(50))
+	BEGIN
+		UPDATE item
+   	 	SET brand_id =  brandID,
+    			        item_name = itemName,
+    				item_price = itemPrice,
+        			item_relDate = itemRelDate,
+        			item_Desc = itemDesc
+    		WHERE item_id = itemID;
+	END $$
+
+
+
+--Get list of item
+	DELIMITER $$
+	CREATE PROCEDURE `Get_Item`()
+	BEGIN
+		DECLARE itemNo, brandNo, itemPrice int;
+    		DECLARE itemName, itemDesc varchar(50);
+   		DECLARE itemRelDate date;
+		DECLARE exitLoop boolean DEFAULT false;
+    
+   		DECLARE cur_item CURSOR FOR SELECT * FROM Item;
+    
+    		DECLARE CONTINUE HANDLER FOR NOT FOUND SET exitLoop = true;
+    		OPEN cur_item;
+    
+    		getlist: LOOP
+    
+    			FETCH FROM cur_item INTO itemNo, brandNo, itemName, itemPrice, itemRelDate, itemDesc;
+        		IF exitLoop THEN
+        			LEAVE getlist;
+        		END IF;
+        
+    			SELECT itemNo, brandNo, itemName, itemPrice, DATE_FORMAT(itemRelDate,'%d-%m-%Y') AS Release_Date, itemDesc;
+        
+    		END LOOP getlist;
+    
+    		CLOSE cur_item;
+	END$$
+
+
+
+--Get specific item
+	DELIMITER $$
+	CREATE PROCEDURE `Get_Item`(IN `itemNum` INT)
+	BEGIN
+		DECLARE itemNo, brandNo, itemPrice int;
+    		DECLARE itemName, itemDesc varchar(50);
+    		DECLARE itemRelDate date;
+		DECLARE exitLoop boolean DEFAULT false;
+    
+    		DECLARE cur_item CURSOR FOR SELECT * FROM Item;
+    
+    		DECLARE CONTINUE HANDLER FOR NOT FOUND SET exitLoop = true;
+    		OPEN cur_item;
+    
+    		getlist: LOOP
+    
+    			FETCH FROM cur_item INTO itemNo, brandNo, itemName, itemPrice, itemRelDate, itemDesc;
+        		IF exitLoop THEN
+        			LEAVE getlist;
+        		END IF;
+        
+        		IF itemNo = itemNum THEN
+    				SELECT itemNo, brandNo, itemName, itemPrice, DATE_FORMAT(itemRelDate,'%d-%m-%Y') AS Release_Date, itemDesc;
+        		END IF;
+        
+    		END LOOP getlist;
+    
+    	CLOSE cur_item;
+	END$$
+
+
+---------------------------------------------PURCHASE----------------------------------------------------
+
+--Insert Purchase
+	DELIMITER $$
+	CREATE PROCEDURE Insert_Purchase(purID int, custID int, itemID int, purQuantity int, purDate date, purTotal int)
+	BEGIN
+		INSERT INTO purchase
+    		VALUES(purID, custID, itemID, purQuantity, purDate, purTotal);
+    
+    		SELECT 'Data has been added';
+	END$$
+
+--Delete specific purchase
+	DELIMTIER $$
+	CREATE PROCEDURE Delete_Purchase(purID int)
+	BEGIN
+    		DECLARE purNum int;
+    
+    		SELECT COUNT(pur_id) INTO purNum
+    		FROM purchase
+    		WHERE pur_id = purID;
+    
+    		IF(purNum != 1) THEN
+       		SIGNAL SQLSTATE '45000'
+            		SET MESSAGE_TEXT = 'This Purchase ID does not exist';
+    		ELSE
+        		DELETE FROM purchase
+       	 		WHERE pur_id = purID;
+    		END IF;
+	END $$
+
+
+--Modify specific purchase
+	DELIMITER $$
+	CREATE PROCEDURE Modify_Purchase(purID int, custID int, itemID int, purQuantity int, purDate date, purTotal int)
+	BEGIN
+		UPDATE purchase
+    		SET cust_id = 	custID,
+    				item_id = itemID,
+       		 		pur_quantity = purQuantity,
+        			pur_datepurchase = purDate,
+        			pur_total = purTotal
+    		WHERE pur_id = purID;
+	END $$
+
+---------------------------------------------------------------Customer----------------------------------------------------------------------
+
+--Insert New Customer
+	DELIMITER $$
+	CREATE PROCEDURE Insert_Cust (CustID int, CustName varchar(30), CustPhone int, CustEmail varchar(30), CustAddress varchar(50))
+	BEGIN
+		INSERT INTO customer
+		VALUES (CustID, CustName, CustPhone, CustEmail, CustAddress);
+	END $$
+
+--Delete Customer
+	DELIMITER $$
+	CREATE PROCEDURE Delete_Cust(custID int)
+	BEGIN
+	DECLARE custNum int;
+
+		SELECT Count(custID) INTO custNum
+		FROM customer
+		WHERE cust_id = custID;
+
+	IF (custNum = 1) THEN
+		DELETE FROM customer
+		WHERE cust_id = custID;
+	ELSE
+		SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'Customer ID does not exist';
+	END IF;
+	END$$
+
+--Modify customer
+	DELIMITER $$
+	CREATE PROCEDURE Update_cust (custID int,custName varchar(30),custphone int,custEmail varchar(30), custAddress varchar(50))
+	BEGIN
+	DECLARE custNum int;
+
+		SELECT Count(custID) INTO custNum
+		FROM customer
+		WHERE cust_id = custID;
+
+	IF (custNum = 1) THEN
+		UPDATE Customer
+    		SET Cust_Name = custName,
+        	Cust_phoneNum = custphone,
+        	Cust_Email = custEmail,
+        	Cust_address = custAddress
+    		WHERE Cust_id = custID;
+    	ELSE
+    		SIGNAL SQLSTATE '45000'
+    	SET MESSAGE_TEXT = 'Customer ID does not exist';
+	END IF;
+	END $$
+
+#############################################################################################################################################
+FUNCTION
+
+--Function to calculate voucher according to total purchase of a certain customer
+
+	DELIMITER $$
+	CREATE FUNCTION vouchCal(totalPur int)
+	RETURNS int
+
+	BEGIN
+		DECLARE voucher int;
+    		SET voucher = 0;
+    
+		IF(totalPur BETWEEN 100 AND 500) THEN
+    			SET voucher = 50;
+    
+    		ELSEIF(totalPur BETWEEN 501 AND 1000) THEN
+    			SET voucher = 100;
+        
+    		ELSEIF(totalPur BETWEEN 1001 AND 2000) THEN
+    			SET voucher = 150;
+    
+    		ELSEIF(totalPur BETWEEN 2001 AND 3000) THEN
+  			SET voucher = 200;
+   	
+    		ELSEIF(totalPur > 3000) THEN
+    			SET voucher = 250;
+        
+    		END IF;
+  	
+    	RETURN (voucher);
+	END $$
+
+	--Procedure to run the function
+
+	DELIMITER $$
+	CREATE PROCEDURE proc_vouchCal(custID int)
+   	BEGIN
+        	SELECT c.cust_id, c.cust_name, CONCAT('RM ',SUM(p.pur_total)) AS Total_Purchase, CONCAT('RM ', vouchCal(SUM(p.Pur_Total))) AS Eligible_Voucher
+        	FROM customer c
+            		INNER JOIN purchase p ON c.Cust_Id = p.Cust_Id
+        	WHERE c.Cust_Id = custID;
+	END
+
+
+
+--Function to calculate number of purchase by a certain customer
+
+	DELIMITER $$
+	CREATE FUNCTION calNumPurchase(custID int)
+	RETURNS int
+	BEGIN
+		DECLARE numOfPurchase int;
+
+		SELECT COUNT(pur_id) INTO numOfPurchase
+    		FROM purchase
+    		WHERE cust_id = custID;
+
+		RETURN (numOfPurchase);
+	END $$
+
+
+	--Procedure to run the function
+	DELIMTIER $$
+	CREATE PROCEDURE proc_calNumPurchase()
+	BEGIN
+		DECLARE cname varchar(50);
+    		DECLARE cid int;
+    
+   	 	SELECT cust_name, cust_id INTO cname, cid
+    		FROM customer
+    		WHERE cust_id = custID;
+    
+    		SELECT CONCAT('Customer ID: ', cid) AS '';
+    		SELECT CONCAT('Customer Name: ', cname) AS '';
+    		SELECT CONCAT('Number of purchase by this customer is ', Number_of_purchase(custID)) AS '';
+	END $$
